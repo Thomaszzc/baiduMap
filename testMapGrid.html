@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<style type="text/css">
+		body, html{width: 100%;height: 100%;margin:0;font-family:"微软雅黑";}
+		#allmap {height:90%; width: 100%;}
+		#control{width:100%;}
+		button{
+			padding: 5px;
+		}
+		textarea{
+			vertical-align: top;
+		}
+	</style>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=你的密钥"></script>
+<script type="text/javascript" src="http://cdn.bootcss.com/jquery/3.1.1/jquery.js"></script>
+	<title>设置线、面可编辑</title>
+</head>
+<body>
+	<div id="allmap"></div>
+	<div id="control">
+		<input type="text" placeholder="距离" id="distance"><button id="produce">循环</button>
+		<button id="clear">清空</button>
+
+		<textarea id="pointContainer"></textarea>
+	</div>
+</body>
+</html>
+<script type="text/javascript">
+	// 百度地图API功能
+	var map = new BMap.Map("allmap");
+	map.centerAndZoom(new BMap.Point(116.404, 39.915), 15);
+	var top_left_navigation = new BMap.NavigationControl();  //左上角，添加默认缩放平移控件
+	map.addControl(top_left_navigation);
+	map.enableScrollWheelZoom();
+	map.addEventListener('click',addMarker);
+	function addMarker(e){
+		produceMarkerPoint(e.point.lng,e.point.lat);
+		map.removeEventListener('click',addMarker);
+	}
+
+
+	function addLabel(str){
+		var label=new BMap.Label(str);
+		label.setOffset(new BMap.Size(-55,-15));
+		return label;
+	}
+	var pointArray=[];
+
+	$('#produce').off('click').on('click',function(){
+		var dis=$('#distance').val();
+		debugger;
+		var tempArray=[];
+		$.extend(tempArray,pointArray);
+		while(tempArray.length>0){
+			var point=tempArray.shift();
+			pointArray.shift();
+			var circle=new BMap.Circle(point,dis*1000,{
+				strokeColor:'blue',
+				strokeWeight:1,
+				fillOpacity:0.1
+			});
+			map.addOverlay(circle);	
+			produceMarker(circle.Mu.Ee,circle.Mu.De,circle.Mu.Je,circle.Mu.Ie);
+
+		}
+	});
+
+	function produceMarker(maxY,maxX,minY,minX){
+		var halfX=(minX+maxX)/2;
+		var halfY=(minY+maxY)/2;
+
+		produceMarkerPoint(halfY,minX);
+		produceMarkerPoint(halfY,maxX);
+		produceMarkerPoint(maxY,halfX);
+		produceMarkerPoint(minY,halfX);
+
+
+	}
+
+
+	function produceMarkerPoint(lng,lat){
+		var marker=new BMap.Marker(new BMap.Point(lng,lat));
+		map.addOverlay(marker);
+		pointArray.push(marker.getPosition());
+		marker.addEventListener('click',function(e){
+			$('#pointContainer').val(e.point.lng+','+e.point.lat);
+		})
+	}
+
+	$('#clear').off('click').on('click',function(){
+		map.clearOverlays();
+		pointArray=[];
+	});
+
+	
+</script>
+
